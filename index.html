@@ -28,6 +28,7 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.18);
+            position: relative; /* Needed for positioning the button */
         }
 
         h1 {
@@ -50,6 +51,14 @@
             margin: 1rem 0;
             font-weight: bold;
         }
+        
+        /* --- Button Container (New) --- */
+        #button-container {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 10; /* Ensure it's above other elements */
+        }
 
         /* --- Buttons --- */
         button {
@@ -57,12 +66,11 @@
             border: none;
             border-radius: 12px;
             color: white;
-            padding: 15px 32px;
+            padding: 12px 24px; /* Slightly smaller for the corner */
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
-            margin: 10px 2px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             box-shadow: 0 4px 15px 0 rgba(255, 107, 139, 0.75);
@@ -93,12 +101,12 @@
 <body>
 
     <div id="game-container">
+        <div id="button-container">
+            <button id="startButton">Start Game</button>
+        </div>
         <h1>Star Catcher</h1>
         <div id="score-board">Score: <span id="score">0</span></div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div>
-            <button id="startButton">Start Game</button>
-        </div>
     </div>
 
     <div id="message-box">Game Over!</div>
@@ -177,108 +185,4 @@
                 ctx.fill();
                 
                 ctx.shadowBlur = 0; // Reset shadow
-            });
-        }
-
-        // --- Game Logic ---
-        function updateStars() {
-            for (let i = stars.length - 1; i >= 0; i--) {
-                const star = stars[i];
-                star.y += star.speed;
-
-                // Collision detection
-                if (
-                    star.y + star.size > player.y &&
-                    star.y - star.size < player.y + player.height &&
-                    star.x > player.x &&
-                    star.x < player.x + player.width
-                ) {
-                    stars.splice(i, 1); // Remove star
-                    score++;
-                    scoreEl.textContent = score;
-                }
-
-                // Remove star if it goes off-screen
-                if (star.y - star.size > canvas.height) {
-                    stars.splice(i, 1);
-                    endGame(); // End game if a star is missed
-                }
-            }
-        }
-
-        function spawnStar() {
-            if (gameActive && Math.random() * starSpawnRate < 1) {
-                const size = Math.random() * 10 + 5; // Star size between 5 and 15
-                stars.push({
-                    x: Math.random() * (canvas.width - 20) + 10, // Avoid spawning too close to edges
-                    y: -size,
-                    size: size,
-                    speed: Math.random() * starSpeed + 1
-                });
-            }
-        }
-
-        function clearCanvas() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Fading trail effect
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // --- Game Loop ---
-        function gameLoop() {
-            if (!gameActive) return;
-
-            clearCanvas();
-            spawnStar();
-            updateStars();
-            drawStars();
-            drawPlayer();
-
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // --- Game State Management ---
-        function startGame() {
-            if (gameOver) { // Reset if game was over
-                score = 0;
-                scoreEl.textContent = score;
-                stars.length = 0;
-                gameOver = false;
-                messageBox.style.display = 'none';
-            }
             
-            if (!gameActive) {
-                gameActive = true;
-                startButton.textContent = 'Restart Game';
-                gameLoop();
-            } else { // Restart logic
-                gameActive = false; // Stop the loop
-                score = 0;
-                scoreEl.textContent = score;
-                stars.length = 0;
-                gameOver = false;
-                messageBox.style.display = 'none';
-                
-                // A small delay to ensure the old loop has stopped before starting a new one
-                setTimeout(() => {
-                    gameActive = true;
-                    gameLoop();
-                }, 100);
-            }
-        }
-
-        function endGame() {
-            gameActive = false;
-            gameOver = true;
-            messageBox.textContent = `Game Over! Score: ${score}`;
-            messageBox.style.display = 'block';
-            startButton.textContent = 'Play Again?';
-        }
-        
-        // --- Initial Draw ---
-        // Draw the player initially so it's visible before the game starts
-        clearCanvas();
-        drawPlayer();
-
-    </script>
-</body>
-</html>
